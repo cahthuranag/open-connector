@@ -1,6 +1,6 @@
 import type { ProviderActionHandlers, ProviderFetch } from "../provider-runtime.ts";
 
-import { optionalNumber, optionalRawString, optionalRecord, optionalString, recordOrEmpty } from "../../core/cast.ts";
+import { optionalNumber, optionalRawString, optionalRecord, optionalString } from "../../core/cast.ts";
 import {
   parseProviderJsonBodyText,
   providerInputError,
@@ -47,10 +47,15 @@ export const allratestodayActionHandlers: ProviderActionHandlers<"allratestoday"
     );
     if (!Array.isArray(input.symbols)) return latest;
     const rates: Record<string, number> = {};
+    const missing: string[] = [];
     for (const value of input.symbols) {
       const code = currencyCode(value, "symbols");
       const rate = latest.rates[code];
-      if (rate !== undefined) rates[code] = rate;
+      if (rate === undefined) missing.push(code);
+      else rates[code] = rate;
+    }
+    if (missing.length > 0) {
+      throw providerInputError(`AllRatesToday open rates do not include ${missing.join(", ")}.`);
     }
     return { ...latest, rates };
   },
@@ -98,8 +103,12 @@ async function requestLatest(base: string, context: AllRatesTodayRuntimeContext)
   if (body.result !== "success") {
     throw providerResponseError(optionalRawString(body.message) ?? "AllRatesToday returned an error result");
   }
+  const table = optionalRecord(body.rates);
+  if (table === undefined) {
+    throw providerResponseError("AllRatesToday response has no rates table");
+  }
   const rates: Record<string, number> = {};
-  for (const [code, value] of Object.entries(recordOrEmpty(body.rates))) {
+  for (const [code, value] of Object.entries(table)) {
     const rate = optionalNumber(value);
     if (rate !== undefined && Number.isFinite(rate) && rate > 0) rates[code] = rate;
   }

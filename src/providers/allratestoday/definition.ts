@@ -9,7 +9,7 @@ export const provider: ProviderDefinition = {
   service,
   displayName: "AllRatesToday",
   description:
-    "Get daily European Central Bank reference exchange rates for 30 currencies through the AllRatesToday open endpoint, and convert amounts between them. Free, including commercial use, and needs no API key; displayed rates should credit AllRatesToday.",
+    "Get daily European Central Bank reference exchange rates for 30 currencies through the AllRatesToday open endpoint, and convert amounts between them. Free, including commercial use, and needs no API key; wherever rates are displayed, a visible, followable link to allratestoday.com is required.",
   categories: ["Finance", "Data"],
   authTypes: ["no_auth"],
   auth: [{ type: "no_auth" }],
